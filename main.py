@@ -3,6 +3,8 @@ import numpy as np
 import pandas as pd
 import glob
 import time
+import seaborn as sns
+import sys
 import matplotlib
 matplotlib.use('Agg')
 
@@ -43,9 +45,26 @@ def visualizeDF2(df, category, colNames):
     plt.savefig(f'./plots/{category}.png', dpi=400)
 
 
+def Histogram(df, category, colNames):
+    for index, i in enumerate(df.columns):
+        hist = sns.histplot(data = df[i])
+        plt.title(colNames[i])
+        plt.ylabel("Number of Occurrences")
+        plt.xlabel("Values")
+        fig = hist.get_figure()
+        fig.savefig(f'./plots/hist/{category}_{colNames[index]}.png')
+        plt.clf()
 
+def histRoutine():
+    colNames = ["Tachometer Signal", "Underhang Accel. X",  "Underhang Accel. Y",  "Underhang Accel. Z",  "Overhang Accel. X",  "Overhang Accel. Y",  "Overhang Accel. Z", "Microphone"]
+    focusDf = CSV2Dataset(normal)
+    print(focusDf.head())
+    
+    Histogram(focusDf, "Normal", colNames)
 
-def routine():
+    #plt.show()
+
+def lineRoutine():
     colNames = ["Tachometer Signal", "Underhang Accel. X",  "Underhang Accel. Y",  "Underhang Accel. Z",  "Overhang Accel. X",  "Overhang Accel. Y",  "Overhang Accel. Z", "Microphone"]
     plots = {"Normal - Baseline": normal, "Imbalance - 6g": imbalance6g, "Imbalance - 10g": imbalance10g, 
         "Imbalance - 15g": imbalance15g, "Imbalance - 20g": imbalance20g, "Imbalance - 25g": imbalance25g, 
@@ -53,12 +72,14 @@ def routine():
     
     for key, value in plots.items():
         focusDf = CSV2Dataset(value)
+        Histogram(focusDf[7])
         print(focusDf.head())
         visualizeDF2(focusDf, key, colNames)
         print(f'Processed {key}')
-    
 
+    #plt.show()
+    print("plotted")
 
 if __name__ == "__main__":
-    routine()
+    histRoutine()
 
