@@ -1,0 +1,6 @@
+Starting profile A: [ u: 10, e: 10, o: adam ] -> Accuracy: 0.9653821989528796
+Starting profile B: [ u: 64, e: 10, o: adam ] -> Accuracy: 0.9791204188481676
+Starting profile C: [ u: 128, e: 10, o: adam ] -> Accuracy: 0.9805549738219895
+Starting profile D: [ u: 10, e: 10, o: SGD ] -> Accuracy: 0.9566596858638744
+Starting profile E: [ u: 64, e: 10, o: SGD ] -> Accuracy: 0.9649528795811518
+Starting profile F: [ u: 128, e: 10, o: SGD ] -> Accuracy: 0.9662617801047121
