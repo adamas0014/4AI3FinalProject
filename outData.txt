@@ -4,3 +4,9 @@ Starting profile C: [ u: 128, e: 10, o: adam ] -> Accuracy: 0.9805549738219895
 Starting profile D: [ u: 10, e: 10, o: SGD ] -> Accuracy: 0.9566596858638744
 Starting profile E: [ u: 64, e: 10, o: SGD ] -> Accuracy: 0.9649528795811518
 Starting profile F: [ u: 128, e: 10, o: SGD ] -> Accuracy: 0.9662617801047121
+Profile A: [ u: 10, e: 10, o: adam ] -> Accuracy: 0.9661570680628272
+Profile B: [ u: 64, e: 10, o: adam ] -> Accuracy: 0.9798010471204188
+Profile C: [ u: 128, e: 10, o: adam ] -> Accuracy: 0.9798952879581152
+Profile D: [ u: 10, e: 10, o: SGD ] -> Accuracy: 0.9570157068062827
+Profile E: [ u: 64, e: 10, o: SGD ] -> Accuracy: 0.9657801047120419
+Profile F: [ u: 128, e: 10, o: SGD ] -> Accuracy: 0.9664712041884816
