@@ -1,4 +1,5 @@
-#!/usr/bin/env python3
+# %%Data import and outlier removal
+from sklearn.utils import shuffle
 import numpy as np
 import pandas as pd
 import glob
@@ -6,80 +7,67 @@ import time
 import seaborn as sns
 import sys
 import matplotlib
-matplotlib.use('Agg')
-
+import sklearn
+import sklearn.model_selection
 import matplotlib.pyplot as plt
+from tensorflow import keras
+from sklearn.preprocessing import StandardScaler
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import roc_auc_score
+from NeuralNet import *
+from KNeighbors import *
+from SVCs import SupportVectors
 
 
+#import data
+df = pd.read_csv('master200.csv')
+rand = 12
+df = shuffle(df, random_state = rand).reset_index().drop('index', axis = 1)
+#print(df.head())
 
-datasetPath = "C:\\Users\\adama\\OneDrive\\Documents\\4AI3_FinalProject\\dataset\\"
-normal = glob.glob(datasetPath + 'normal\\normal\\*.csv', recursive=True)
-imbalance6g = glob.glob(datasetPath + 'imbalance\\imbalance\\6g\\*.csv')
-imbalance10g = glob.glob(datasetPath + 'imbalance\\imbalance\\10g\\*.csv')
-imbalance15g = glob.glob(datasetPath + 'imbalance\\imbalance\\15g\\*.csv')
-imbalance20g = glob.glob(datasetPath + 'imbalance\\imbalance\\20g\\*.csv')
-imbalance25g = glob.glob(datasetPath + 'imbalance\\imbalance\\25g\\*.csv')
-imbalance30g = glob.glob(datasetPath + 'imbalance\\imbalance\\30g\\*.csv')
-imbalance35g = glob.glob(datasetPath + 'imbalance\\imbalance\\35g\\*.csv')
+#standard scaler on the data
+y = df['Class']
+X = df.drop(['Class'], axis = 1)
+colnames = X.columns
+standard = StandardScaler()
+X = standard.fit_transform(X)
+X=pd.DataFrame(X,columns = colnames)
 
-def CSV2Dataset(pathList):
-    df = pd.DataFrame()
-    for x in pathList:
-        inData = pd.read_csv(x, header=None)
-        df = pd.concat([df, inData], ignore_index = True)
-    
-    return df
+#Removes all values less than 3
+X['class'] = y
+colnames = X.columns
+for i in range(len(colnames)):
+  X = X.loc[X[colnames[i]]<=3]
 
+#Upsampled data to balance dataset
+print(f'Count of null values in dataset: {df.isnull().sum().sum()}')
+y = df['Class']
+X = df.drop(['Class'], axis = 1)
+print(f'BEFORE: Count by class {y.value_counts()}\n')
+from imblearn.over_sampling import RandomOverSampler
+overSampler = RandomOverSampler(sampling_strategy = 'not majority')
+X_adj, y_adj = overSampler.fit_resample(X, y)
+print(f'AFTER: Count by class {y_adj.value_counts()}')
 
+xTrain, xTest, yTrain, yTest = sklearn.model_selection.train_test_split(X_adj, y_adj, shuffle = True, test_size = 0.2, random_state = 10)
+print(f'xTrain: {xTrain.shape}\nyTrain: {yTrain.shape}\nxTest: {xTest.shape}\nyTest: {yTest.shape}\n')
 
+sc = sklearn.preprocessing.StandardScaler()
+xTrainSc = sc.fit_transform(xTrain)
+xTestSc = sc.fit_transform(xTest)
+print(f'Scaled: [ XTrain: {xTrainSc.shape}, XTest: {xTestSc.shape} ] \n')
 
-def visualizeDF2(df, category, colNames):
-    figure, axList = plt.subplots(8, sharex=False, sharey=False,figsize=(20,20))
-    figure.suptitle(category)
-    figure.tight_layout(pad = 5)
-    
-    for index, i in enumerate(df.columns):
-        axList[i].plot(df[i])
-        axList[i].set_title(colNames[index])
-    
-    plt.savefig(f'./plots/{category}.png', dpi=400)
+# %% Kneighbors Classifier
+kScore = KNeighbors(xTrainSc,yTrain,xTestSc,yTest)
+print(kScore)
+# %% Neural Net
+netScore = NeuralNetwork(xTrainSc,yTrain,xTestSc,yTest)
+print(netScore)
+# %% SVC classifier (don't run--> takes >5 hours)
+svcScore = SupportVectors(xTrainSc,yTrain,xTestSc,yTest)
+print(svcScore)
 
-
-def Histogram(df, category, colNames):
-    for index, i in enumerate(df.columns):
-        hist = sns.histplot(data = df[i])
-        plt.title(colNames[i])
-        plt.ylabel("Number of Occurrences")
-        plt.xlabel("Values")
-        fig = hist.get_figure()
-        fig.savefig(f'./plots/hist/{category}_{colNames[index]}.png')
-        plt.clf()
-
-def histRoutine():
-    colNames = ["Tachometer Signal", "Underhang Accel. X",  "Underhang Accel. Y",  "Underhang Accel. Z",  "Overhang Accel. X",  "Overhang Accel. Y",  "Overhang Accel. Z", "Microphone"]
-    focusDf = CSV2Dataset(normal)
-    print(focusDf.head())
-    
-    Histogram(focusDf, "Normal", colNames)
-
-    #plt.show()
-
-def lineRoutine():
-    colNames = ["Tachometer Signal", "Underhang Accel. X",  "Underhang Accel. Y",  "Underhang Accel. Z",  "Overhang Accel. X",  "Overhang Accel. Y",  "Overhang Accel. Z", "Microphone"]
-    plots = {"Normal - Baseline": normal, "Imbalance - 6g": imbalance6g, "Imbalance - 10g": imbalance10g, 
-        "Imbalance - 15g": imbalance15g, "Imbalance - 20g": imbalance20g, "Imbalance - 25g": imbalance25g, 
-        "Imbalance - 30g": imbalance30g, "Imbalance - 35g": imbalance35g }
-    
-    for key, value in plots.items():
-        focusDf = CSV2Dataset(value)
-        Histogram(focusDf[7])
-        print(focusDf.head())
-        visualizeDF2(focusDf, key, colNames)
-        print(f'Processed {key}')
-
-    #plt.show()
-    print("plotted")
-
-if __name__ == "__main__":
-    histRoutine()
-
+# %%
